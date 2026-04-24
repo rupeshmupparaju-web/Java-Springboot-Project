@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Data Extractor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --container-bg: rgba(30, 41, 59, 0.65);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #60a5fa;
+            --accent: #8b5cf6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --input-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 850px;
+            background-color: var(--container-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 3rem;
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            z-index: 10;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 220px;
+            padding: 1.2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            font-size: 1.05rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        textarea::placeholder {
+            color: rgba(148, 163, 184, 0.5);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            background-color: rgba(15, 23, 42, 0.8);
+        }
+
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 1.1rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn:hover::after {
+            opacity: 1;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:disabled {
+            background: #334155;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.7;
+        }
+
+        .status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            display: none;
+            font-weight: 500;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .status.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #6ee7b7;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .result-panel {
+            margin-top: 2.5rem;
+            display: none;
+            background-color: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            animation: slideUp 0.5s ease-out;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-panel h3 {
+            margin-top: 0;
+            color: #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-panel h3::before {
+            content: '✨';
+            font-size: 1.2rem;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .data-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1rem 1.2rem;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .data-card:hover {
+            transform: translateX(4px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .data-label {
+            color: var(--primary-hover);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .data-value {
+            color: var(--text-main);
+            font-size: 1.05rem;
+            word-break: break-word;
+            font-weight: 400;
+        }
+
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            display: inline-block;
+            margin-right: 10px;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .nav-link {
+            margin-top: 2rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--text-main);
+        }
+
+        .nav-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Ambient glowing orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: rgba(59, 130, 246, 0.2);
+            top: -100px;
+            left: -100px;
+            animation: float 8s infinite alternate ease-in-out;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: rgba(139, 92, 246, 0.15);
+            bottom: -150px;
+            right: -100px;
+            animation: float 10s infinite alternate-reverse ease-in-out;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(30px, 50px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        <div class="header">
+            <h2>AI Data Extractor</h2>
+            <p class="subtitle">Paste raw text below (e.g., email, unstructured job description). The AI will extract
+                key entities and save them automatically.</p>
+        </div>
+
+        <div class="input-wrapper">
+            <textarea id="rawText"
+                placeholder="Paste data here...&#10;&#10;Ex: Hello, the vendor name is TechCorp and the job ID is TC-990. The role is a Software Engineer based in New York. You can reach the contact at 555-0199. Status is Open."></textarea>
+        </div>
+
+        <button id="extractBtn" class="btn">
+            <span class="loader" id="loader"></span>
+            <span id="btnText">Extract & Save Data</span>
+        </button>
+
+        <div id="statusMsg" class="status"></div>
+
+        <div id="resultPanel" class="result-panel">
+            <h3>Success! Data properly analyzed and stored</h3>
+            <div class="data-grid">
+                <div class="data-card">
+                    <span class="data-label">Job ID</span>
+                    <span class="data-value" id="res-jobId">-</span>
+                </div>
+                <div class="data-card">
+                    <span class="data-label">Status</span>
+                    <span class="data-value" id="res-status">-</span>
+                </div>
+                <div class="data-card">
+                    <span class="data-label">Vendor Company</span>
+                    <span class="data-value" id="res-vendor">-</span>
+                </div>
+                <div class="data-card">
+                    <span class="data-label">Location</span>
+                    <span class="data-value" id="res-location">-</span>
+                </div>
+                <div class="data-card">
+                    <span class="data-label">Contact Number</span>
+                    <span class="data-value" id="res-contact">-</span>
+                </div>
+                <div class="data-card">
+                    <span class="data-label">Job Description</span>
+                    <span class="data-value" id="res-desc">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a href="/login.html" class="nav-link">
+        <svg fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                clip-rule="evenodd"></path>
+        </svg>
+        Back to Login
+    </a>
+
+    <script>
+        document.getElementById('extractBtn').addEventListener('click', async () => {
+            const text = document.getElementById('rawText').value;
+            const statusMsg = document.getElementById('statusMsg');
+            const btn = document.getElementById('extractBtn');
+            const loader = document.getElementById('loader');
+            const btnText = document.getElementById('btnText');
+            const resultPanel = document.getElementById('resultPanel');
+
+            statusMsg.style.display = 'none';
+            resultPanel.style.display = 'none';
+
+            if (!text.trim()) {
+                showStatus('Please paste some text first.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            loader.style.display = 'inline-block';
+            btnText.innerText = 'Analyzing Data...';
+
+            try {
+                const response = await fetch('/api/ai-block/extract', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: text })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    let errorMsg = data.error || 'Failed to extract data.';
+                    if (errorMsg.includes("API Key is missing")) {
+                        errorMsg = "API Key Error: Please set the GEMINI_API_KEY inside your .env file.";
+                    }
+                    showStatus(errorMsg, 'error');
+                } else {
+                    showStatus('Data properly structured and saved!', 'success');
+
+                    document.getElementById('res-jobId').innerText = data.jobId || 'None Found';
+                    document.getElementById('res-status').innerText = data.status || 'None Found';
+                    document.getElementById('res-vendor').innerText = data.vendorCompanyName || 'None Found';
+                    document.getElementById('res-location').innerText = data.location || 'None Found';
+                    document.getElementById('res-contact').innerText = data.contactNumber || 'None Found';
+                    document.getElementById('res-desc').innerText = data.jobDescription || 'None Found';
+
+                    resultPanel.style.display = 'block';
+                }
+            } catch (err) {
+                showStatus('Network error or server is down.', 'error');
+            } finally {
+                btn.disabled = false;
+                loader.style.display = 'none';
+                btnText.innerText = 'Extract & Save Data';
+            }
+        });
+
+        function showStatus(message, type) {
+            const el = document.getElementById('statusMsg');
+            el.innerText = message;
+            el.className = 'status ' + type;
+            el.style.display = 'block';
+        }
+    </script>
+
+</body>
+
+</html>

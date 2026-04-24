@@ -159,6 +159,9 @@
             messageDiv.textContent = result;
             if (response.ok) {
                 messageDiv.className = "success";
+                setTimeout(() => {
+                    window.location.href = "/ai-block.html";
+                }, 1000);
             } else {
                 messageDiv.className = "error";
             }
